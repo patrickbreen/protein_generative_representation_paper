@@ -73,7 +73,7 @@
 
 %% Title, authors and addresses
 
-\title{Unnecessarily Complicated Research Title}
+\title{Generative peptide design}
 
 %% use the tnoteref command within \title for footnotes;
 %% use the tnotetext command for the associated footnote;
@@ -100,17 +100,17 @@
 %% \address[label1]{<address>}
 %% \address[label2]{<address>}
 
-\author{John Smith}
+\author{Patrick Breen}
 
-\address{California, United States}
+\address{Athens Georgia, United States}
 
 \begin{abstract}
 %% Text of abstract
-Suspendisse potenti. Suspendisse quis sem elit, et mattis nisl. Phasellus consequat erat eu velit rhoncus non pharetra neque auctor. Phasellus eu lacus quam. Ut ipsum dolor, euismod aliquam congue sed, lobortis et orci. Mauris eget velit id arcu ultricies auctor in eget dolor. Pellentesque suscipit adipiscing sem, imperdiet laoreet dolor elementum ut. Mauris condimentum est sed velit lacinia placerat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nullam diam metus, pharetra vitae euismod sed, placerat ultrices eros. Aliquam tincidunt dapibus venenatis. In interdum tellus nec justo accumsan aliquam. Nulla sit amet massa augue.
+With the developments in the fields of machine learning, bioinformatics and combinatorial chemistry, scientists hope to be able to search exponentially sized combinatorial search spaces to identify drug targets and to aid in synthetic evolution strategies. Because of both the exponential size of the molecular search space and the complex nature of the objective function, efficent startegies for identifying optimal drug targets is difficult. It is possible that we could use an unsupervised method to produce a lower dimensional latent representation that accounts for the distribution of naturally occuring molecules. Ideally this lower dimensional latent distribution also captures "functional similarity" and can be used to iteratively improve a molecular solution under some objective function. In this work we present such a latent representation for peptides and discuss how our model could be used for peptide design.
 \end{abstract}
 
 \begin{keyword}
-Science \sep Publication \sep Complicated
+Machine Learning \sep Bioinformatics \sep Computational Biology
 %% keywords here, in the form: keyword \sep keyword
 
 %% MSC codes here, in the form: \MSC code \sep code
@@ -126,15 +126,13 @@ Science \sep Publication \sep Complicated
 \linenumbers
 
 %% main text
-\section{Generating novel peptides based on unsupervised latent distribution of peptides}
+\section{Introduction}
 
-- Move this out into other paper as introduction / motivation
-
-Earlier this semester I decided that biosurvielince isn't going to be relevant to a lot of the sequence-related and biologically related things that the other students in my graduate program are doing. With that in mind I set out to prepare a separate project for the purposes of my student seminar in Fall 2016, and I think that it may be a significant enough project to publish, or at least post in in Arxiv and include it as part of my dissertation. The concept, though developed independantly back in September 2016 is similar to a paper by Gomez-Bombarelli et al published in October 2016 titled "Automatic chemical design using data-driven continuous representation of molecules"\cite{gomez2016automatic}. The cited paper attempts to create a generative continuous representation of small molecules for drug-related machine learning purposes. My work will propose a generative continous representation of peptides. A Variational Autoencoder (VAE) combined with a Recurrent eural Network (RNN) Sequence to Sequence (seq2seq) model is the specific model we used in our project. The model used by Gomez-Bombarelli et al also used a VAE, but used a more "vanilla" deep neural network instead of a seq2seq network. In addition, the seq2seq network that we used took advantage of some advanced features such as an "attention mechanism" and "bucketing". Our model was implemented in tensorflow.
+The concept, though developed independantly back in September 2016 is similar to a paper by Gomez-Bombarelli et al published in October 2016 titled "Automatic chemical design using data-driven continuous representation of molecules"\cite{gomez2016automatic}. The cited paper attempts to create a generative continuous representation of small molecules for drug-related machine learning purposes. My work will propose a generative continous representation of peptides. A Variational Autoencoder (VAE) combined with a Recurrent eural Network (RNN) Sequence to Sequence (seq2seq) model is the specific model we used in our project. The model used by Gomez-Bombarelli et al also used a VAE, but used a more "vanilla" deep neural network instead of a seq2seq network. In addition, the seq2seq network that we used took advantage of some advanced features such as an "attention mechanism" and "bucketing". Our model was implemented in tensorflow.
 
 In this project we take have taken the open uniref dataset, filtered for sequences between 10 and 100 amino acids in length, and subsampled one million peptide sequences (enough to fit into memory). One of the most important hyper parameters in our model is $n_z$, which denotes the size of the latent distribution that "encodes" the peptide. By choosing $n_z$ to be large (32) our model was easily able to encode peptides with nearly $100\%$ accuracy. When $n_z$ was small (2), our model was only able to encode patterns in peptides that are extremely "highly conserved" such as the peptide beginning with a Methionine.
 
-We hope to in the next few weeks demonstrate the utility of our seq2seq VAE peptide model. We will show a variety of figures including the relative encoding distances between the input tokens (tokens are biamino acids and encoded prior to being input into the RNN). Inspection of the embeddings will show us whether the token XY is similar to the token YX for various amino acids. Embeddings will also let us see relative substitution rates, which are not explicitly fed into the model from something like a Blossum matrix, but rather are "learned organically".
+We hope to in the next few weeks demonstrate the utility of our seq2seq VAE peptide model. We will show a variety of figures including the relative encoding distances between the input tokens (tokens are amino acid 2-mers and encoded prior to being input into the RNN). Inspection of the embeddings will show us whether the token XY is similar to the token YX for various amino acids. Embeddings will also let us see relative substitution rates, which are not explicitly fed into the model from something like a Blossum matrix, but rather are "learned organically".
 
 We also want to look at error (both reconstruction error and a latent error which captures the entropy of the latent distribution) and example reconstructions for a range of hyper parameter choices of $n_z$. We want to see if there is any accuracy performance correlation with sequence length.
 
@@ -144,84 +142,63 @@ Our model provides more than just a continuous representation of peptides. By co
 
 One large assumption used in this project is the seq2seq error function which serves as the objective function for the whole model. Currently we used a very simple dense sequence comparison (I don't know the details, need to look this up.) but in the future we might want to extend this model by using a seq2seq error function that explicitly accounts for insertions and deletions present in biological sequences. For now, we consider this problem to be mitigated in part by focusing on relatively small peptides (less than 100 amino acids) and we assume that small conserved motifs of amino acids (which is what our model is capturing) are unlikely to contain insertions or deletions. Insertions and deletions are more likely to occur between biologically concerced motifs. Our model currently does allow for insertions and deletions in a general seq2seq way, but it does not handle them explicitly.
 
-\section{The First Section}
-\label{S:1}
+\section{Model and Data}
 
-Maecenas \cite{Smith:2012qr} fermentum \cite{Smith:2013jd} urna ac sapien tincidunt lobortis. Nunc feugiat faucibus varius. Ut sed purus nunc. Ut eget eros quis lectus mollis pharetra ut in tellus. Pellentesque ultricies velit sed orci pharetra et fermentum lacus imperdiet. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse commodo ultrices mauris, condimentum hendrerit lorem condimentum et. Pellentesque urna augue, semper et rutrum ac, consequat id quam. Proin lacinia aliquet justo, ut suscipit massa commodo sit amet. Proin vehicula nibh nec mauris tempor interdum. Donec orci ante, tempor a viverra vel, volutpat sed orci.
+The model was implemented using the Tensorflow deep learning library\cite{tensorflow2015-whitepaper}. The model overall is a sequence to sequence autoencoder, in which a peptide, represented as a sequence, is mapped into a latent distribution which is then sampled to generate a state vector that reproduces the initial peptide. By setting each amino acid equal to a unit (word) in our input and output sequence, we could think of our model as a translation model with vocabulary size 20 (the number of canonical amino acids). Though this simplistic approach would work, we wanted to encorporate advanced translation methods including embedding via negative sampling. This required us to increase our "vocabulary size". Therefore, instead of using individual amino acids as "words" we used amino acid 2-mers, resulting in a vocabulary size of 400 canonical amino acid 2-mers. We replaced non-canonical amino acids with an "unknown" token represented as a '\_' character.
 
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Pellentesque quis interdum velit. Nulla tincidunt sem quis nisi molestie nec hendrerit nulla interdum. Nunc at lectus at neque dapibus dapibus sit amet in massa. Nam ut nisl in diam consectetur dignissim. Sed lacinia diam id nunc suscipit vitae semper lorem semper. In vehicula velit at tortor fringilla elementum aliquam erat blandit. Donec pretium libero et neque vehicula blandit. Curabitur consequat interdum sem at ultrices. Sed at tincidunt metus. Etiam vulputate, lacus eget fermentum posuere, ante mi dignissim augue, et ultrices felis tortor sed nisl.
+Our data was aquired from the uniref90 dataset, a dataset that contains non-redundant proteins and peptides with length of at least 11 amino acids. From this dataset we constrained our model to peptides of less than 100 amino acids resulting in about 6.1 million peptides. We uniformly sampled 10000 of these peptides as a test set, and put the rest in our training set. Note that our dataset, while large, is much less than the $20^{100}$ total possible possible peptides. By constraining our model to peptides that are found in nature we heavily bias our model to only a small fraction of the combinatorial search space.
 
-\begin{itemize}
-\item Bullet point one
-\item Bullet point two
-\end{itemize}
+Both the training and testing peptides were "bucketed" into 4 buckets based on amino acid 2-mer length, 5-10, 10-20, 20-30 and 30-50. The sequence length distributions are given in Figure \ref{fig:distribution_data_testing} and \ref{fig:distribution_data_training}. Note the scales.
 
-\begin{enumerate}
-\item Numbered list item one
-\item Numbered list item two
-\end{enumerate}
-
-\subsection{Subsection One}
-
-Quisque elit ipsum, porttitor et imperdiet in, facilisis ac diam. Nunc facilisis interdum felis eget tincidunt. In condimentum fermentum leo, non consequat leo imperdiet pharetra. Fusce ac massa ipsum, vel convallis diam. Quisque eget turpis felis. Curabitur posuere, risus eu placerat porttitor, magna metus mollis ipsum, eu volutpat nisl erat ac justo. Nullam semper, mi at iaculis viverra, nunc velit iaculis nunc, eu tempor ligula eros in nulla. Aenean dapibus eleifend convallis. Cras ut libero tellus. Integer mollis eros eget risus malesuada fringilla mattis leo facilisis. Etiam interdum turpis eget odio ultricies sed convallis magna accumsan. Morbi in leo a mauris sollicitudin molestie at non nisl.
-
-\begin{table}[h]
-\centering
-\begin{tabular}{l l l}
-\hline
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
-\hline
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\hline
-\end{tabular}
-\caption{Table caption}
-\end{table}
-
-\subsection{Subsection Two}
-
-Donec eget ligula venenatis est posuere eleifend in sit amet diam. Vestibulum sollicitudin mauris ac augue blandit ultricies. Nulla facilisi. Etiam ut turpis nunc. Praesent leo orci, tincidunt vitae feugiat eu, feugiat a massa. Duis mauris ipsum, tempor vel condimentum nec, suscipit non mi. Fusce quis urna dictum felis posuere sagittis ac sit amet erat. In in ultrices lectus. Nulla vitae ipsum lectus, a gravida erat. Etiam quam nisl, blandit ut porta in, accumsan a nibh. Phasellus sodales euismod dolor sit amet elementum. Phasellus varius placerat erat, nec gravida libero pellentesque id. Fusce nisi ante, euismod nec cursus at, suscipit a enim. Nulla facilisi.
-
-\begin{figure}[h]
-\centering\includegraphics[width=0.4\linewidth]{placeholder}
-\caption{Figure caption}
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/seq_lengths_test.png}
+  \caption{Distribution of amino acid 2-mer sequence lengths in the testing set.}
+  \label{fig:distribution_data_testing}
 \end{figure}
 
-Integer risus dui, condimentum et gravida vitae, adipiscing et enim. Aliquam erat volutpat. Pellentesque diam sapien, egestas eget gravida ut, tempor eu nulla. Vestibulum mollis pretium lacus eget venenatis. Fusce gravida nisl quis est molestie eu luctus ipsum pretium. Maecenas non eros lorem, vel adipiscing odio. Etiam dolor risus, mattis in pellentesque id, pellentesque eu nibh. Mauris nec ante at orci ultricies placerat ac non massa. Aenean imperdiet, ante eu sollicitudin vestibulum, dolor felis dapibus arcu, sit amet fermentum urna nibh sit amet mauris. Suspendisse adipiscing mollis dolor quis lobortis.
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/seq_lengths_train.png}
+  \caption{Distribution of amino acid 2-mer sequence lengths in the training set.}
+  \label{fig:distribution_data_training}
+\end{figure}
 
-\begin{equation}
-\label{eq:emc}
-e = mc^2
-\end{equation}
+The sequence-to-sequence model starts with the encoder which uses embedding and and RNN based on gated reccurent units (GRU) a simpler RNN unit than long sort term memory (LSTM) units, but with comperable performance \cite{chung2014empirical}. The size of the embedding vectors, which was the same as the size of the GRU units, was 64. The reccurent neural network had 2 layers, and used attention\cite{chorowski2014end}. The encoder state was mapped into a vector of length $n_z$ representing the mean of a normal distribution and a vector of length $n_z$ representing the standard deviation of a normal distribution. This disrubution was sampled and decoded using a decoder GRU-based reccurent neural network. This type of generative latent distribution model is known as a variational autoencoder (VAE) and has been used in other molecular representation papers\cite{gomez2016automatic}. See Figure \ref{model_diagram} for a diagram of the model.
 
-\section{The Second Section}
-\label{S:2}
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/model_diagram.eps}
+  \caption{diagram of sequence to sequence peptide model.}
+  \label{model_diagram}
+\end{figure}
 
-Reference to Section \ref{S:1}. Etiam congue sollicitudin diam non porttitor. Etiam turpis nulla, auctor a pretium non, luctus quis ipsum. Fusce pretium gravida libero non accumsan. Donec eget augue ut nulla placerat hendrerit ac ut mi. Phasellus euismod ornare mollis. Proin tempus fringilla ultricies. Donec pretium feugiat libero quis convallis. Nam interdum ante sed magna congue eu semper tellus sagittis. Curabitur eu augue elit.
+The objective function used to train our model is a sum of the reconstruction loss, the error between the input and output sequences, and the latent loss, a regularization term (both measured in log-perplexity. My minimizing the latent loss, we prevent over fitting our model to the training data. The reconstruction loss was defined as the weighted cross entropy for a sequence, a loss function that has worked well in english to french translation, as well as general sequence to sequence applications\cite{vinyals2015grammar}. However, despite these successes, it remains to be seen if it is the most appropriate loss function for peptide sequences.
 
-Aenean eleifend purus et massa consequat facilisis. Etiam volutpat placerat dignissim. Ut nec nibh nulla. Aliquam erat volutpat. Nam at massa velit, eu malesuada augue. Maecenas sit amet nunc mauris. Maecenas eu ligula quis turpis molestie elementum nec at est. Sed adipiscing neque ac sapien viverra sit amet vestibulum arcu rhoncus.
+\section{Results}
 
-Vivamus pharetra nibh in orci euismod congue. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Quisque lacus diam, congue vel laoreet id, iaculis eu sapien. In id risus ac leo pellentesque pellentesque et in dui. Etiam tincidunt quam ut ante vestibulum ultricies. Nam at rutrum lectus. Aenean non justo tortor, nec mattis justo. Aliquam erat volutpat. Nullam ac viverra augue. In tempus venenatis nibh quis semper. Maecenas ac nisl eu ligula dictum lobortis. Sed lacus ante, tempor eu dictum eu, accumsan in velit. Integer accumsan convallis porttitor. Maecenas pretium tincidunt metus sit amet gravida. Maecenas pretium blandit felis, ac interdum ante semper sed.
+- Testing loss and latent loss with $n_z$ 2, 4, 8
 
-In auctor ultrices elit, vel feugiat ligula aliquam sed. Curabitur aliquam elit sed dui rhoncus consectetur. Cras elit ipsum, lobortis a tempor at, viverra vitae mi. Cras sed urna sed eros bibendum faucibus. Morbi vel leo orci, vel faucibus orci. Vivamus urna nisl, sodales vitae posuere in, tempus vel tellus. Donec magna est, luctus non commodo sit amet, placerat et enim.
+In order to control the complexity model that captures the peptide distribution, we can train our model with a variety of choices of the hyper paramenter $n_z$. To determine the accuracy of the reconstruction, we chart the loss time on the test set. Figure \ref{fig:loss_fig} shows the reconstruction loss (denoted "loss") and the latent loss (denoted "latent loss") for $n_z$ = 2, 4 and 8.
 
-%% The Appendices part is started with the command \appendix;
-%% appendix sections are then done as normal sections
-%% \appendix
+- Example translations with $n_z$ 2, 4, 8
 
-%% \section{}
-%% \label{}
+Another way of showing reconstruction loss is by doing example translations. Here we show 5 different original sequences, each followed by 3 example reconstructions. Note that due to the latent distribution being probabalistic, these example reconstructions are non-deterministic. In fact, due to the use of the RNN encoder and decoders, the reconstructed peptides can be of varying lengths. This allows us to model a form of insertion/deletion mutation.
 
-%% References
-%%
-%% Following citation commands can be used in the body text:
-%% Usage of \cite is as follows:
-%%   \cite{key}          ==>>  [#]
-%%   \cite[chap. 2]{key} ==>>  [#, chap. 2]
-%%   \citet{key}         ==>>  Author [#]
+- Examine embeddings say for just $n_z$ 2
 
-%% References with bibTeX database:
+Prior to embedding, and after translation, our model uses embedding operations. These operations allow the model to map each 2-mer amino acid token into a dense representation as part of the overall model. We can look at these embeddings and map their relative differences in "embedding space" which captures 2-mer amino acid substitutability.
+
+- Examine "most simmilar peptides in latent space" for just $n_z$ 8
+
+Lets take an example of a peptide and find all peptides close to it in latent space.
+
+- Plot distribution of latent space for just $n_z$ 8
+
+Finally, we can plot the latent means of the distributions for each point in the testing set.
+
+\section{Conclusions}
+
 
 \bibliographystyle{model1-num-names}
 \bibliography{sample.bib}
