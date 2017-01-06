@@ -18,7 +18,7 @@
 %% $Id: elsarticle-template-1-num.tex 149 2009-10-08 05:01:15Z rishi $
 %% $URL: http://lenova.river-valley.com/svn/elsbst/trunk/elsarticle-template-1-num.tex $
 %%
-\documentclass[preprint,12pt]{elsarticle}
+%% \documentclass[preprint,10pt]{elsarticle}
 
 %% Use the option review to obtain double line spacing
 %% \documentclass[preprint,review,12pt]{elsarticle}
@@ -26,7 +26,7 @@
 %% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
 %% for a journal layout:
 %% \documentclass[final,1p,times]{elsarticle}
-%% \documentclass[final,1p,times,twocolumn]{elsarticle}
+\documentclass[final,1p,times,twocolumn]{elsarticle}
 %% \documentclass[final,3p,times]{elsarticle}
 %% \documentclass[final,3p,times,twocolumn]{elsarticle}
 %% \documentclass[final,5p,times]{elsarticle}
@@ -65,7 +65,7 @@
 
 % \biboptions{}
 
-\journal{Journal Name}
+\journal{ACMSE 2017}
 
 \begin{document}
 
@@ -134,13 +134,13 @@ More recently, the widespread adoption of machine learning has allowed us to use
 
 A special type of autoencoder, known as a variational autoencoder (VAE), extends the autoencoder model by adding a layer of probabilistic modeling\cite{kingma2013auto}. A VAE allows one to map a given data point to a distribution that if sampled will represent a probability distribution that can map back to the initial data point. This allows one to not only determine a representation, but also to sample synthetic data points (not in the training data) that are similar to a given data point. This allows a probabilistic way of exploring "synthetic" data points in the input space.
 
-In the application of molecular modeling, a recent paper "Automatic chemical design using data-driven continuous representation of molecules"\cite{gomez2016automatic} used a VAE to produce a generative model of small drug molecules. The cited paper attempts to create a generative continuous representation of small molecules for drug-design related machine learning purposes. The work in this paper will describe a similar model, namely a generative continuous representation of peptides. In addition, the sequence to sequence network that we used took advantage of some advanced features such as an "attention mechanism" and "bucketing" (see Model and Data section for more description). WE SHOW XXX RESULTS.
+In the application of molecular modeling, a recent paper "Automatic chemical design using data-driven continuous representation of molecules"\cite{gomez2016automatic} used a VAE to produce a generative model of small drug molecules. The cited paper attempts to create a generative continuous representation of small molecules for drug-design related machine learning purposes. The work in this paper will describe a similar model, namely a generative continuous representation of peptides. In addition, the sequence to sequence network that we used took advantage of some advanced features such as an "attention mechanism" and "bucketing" (see Model and Data section for more description). We demonstrate how our model can be used as a latent representation, and discuss how it could be extended for semi-supervised peptide design.
 
 \section{Model and Data}
 
-The generative peptide representation model was implemented using the Tensorflow deep learning library\cite{tensorflow2015-whitepaper}. The model overall is a sequence to sequence autoencoder, in which a peptide, represented as a sequence, is mapped into a latent distribution which is then sampled to generate a state vector that attempts to reproduce the initial peptide. By setting each amino acid equal to a unit (word) in our input and output sequence, we could think of our model as a translation model with vocabulary size of about 20 (the number of canonical amino acids). Though this simplistic approach would have worked, we wanted to incorporate advanced translation methods including embedding via negative sampling. This required us to increase our "vocabulary size". Therefore, instead of using individual amino acids as "words" we used amino acid 2-mers, resulting in a vocabulary size of (TODO) 400 canonical amino acid 2-mers. We replaced non-canonical amino acids with an "unknown" token represented as a '\_' character.
+The generative peptide representation model was implemented using the Tensorflow deep learning library\cite{tensorflow2015-whitepaper}. The model overall is a sequence to sequence autoencoder, in which a peptide, represented as a sequence, is mapped into a latent distribution which is then sampled to generate a state vector that attempts to reproduce the initial peptide. By setting each amino acid equal to a unit (word) in our input and output sequence, we could think of our model as a translation model with vocabulary size of about 20 (the number of canonical amino acids). Though this simplistic approach would have worked, we wanted to incorporate advanced translation methods including embedding via negative sampling. This required us to increase our "vocabulary size". Therefore, instead of using individual amino acids as "words" we used amino acid 2-mers, resulting in a vocabulary size of 400 canonical amino acid 2-mers. We replaced non-canonical amino acids with an "unknown" token represented as a '\_' character.
 
-Our data was acquired from uniref90 (which my be downloaded from http://www.uniprot.org/), a dataset that contains proteins and peptides with length of at least 11 amino acids. From this dataset we constrained our model to peptides of less than 100 amino acids resulting in about 6.1 million unique peptides. We uniformly sampled 10000 of these peptides as a test set, and assigned the rest as our training set. Note that our dataset, while large, is many orders of magnitude less than the approximately $20^{100}$ total possible possible peptides of length 100. By constraining our model to only peptides that are found in nature we heavily bias our model to represent only a small fraction of the combinatorial search space.
+Our data was acquired from uniref90, a dataset that contains proteins and peptides with length of at least 10 amino acids. From this dataset we constrained our model to peptides of less than 100 amino acids resulting in about 6.1 million unique peptides. We uniformly sampled 10000 of these peptides as a test set, and assigned the rest as our training set. Note that our dataset, while large, is many orders of magnitude less than the approximately $20^{100}$ total possible possible peptides of length 100. By constraining our model to only peptides that are found in nature we heavily bias our model to represent only a small fraction of the combinatorial search space.
 
 Both the training and testing peptides were "bucketed" into 4 buckets based on amino acid 2-mer length. The 2-mer sizes for each bucket were 5-20, 20-30, 30-40 and 40-50. Peptides falling in separate buckets have some bucket-specific model parameters and some some shared model parameters. The bucket-specific parameters allow the model to handle shorter peptides differently from longer peptides. For example, short peptides tend not to start with a methionine, while almost all longer peptides start with a methionine. Shared parameters capture structure that is not specific to bucket length. An example of parameters that are shared are the embedding parameters, which capture the relative similarities of amino acid 2-mer. This makes rational sense, because chemically a given 2-mer should behave similarly whether it is in a long or short peptide, only the distribution of 2-mers is different larger and smaller peptides.
 
@@ -160,11 +160,11 @@ Both the training and testing peptides were "bucketed" into 4 buckets based on a
 %  \label{fig:distribution_data_training}
 %\end{figure}
 
-The sequence-to-sequence model starts with a sequence encoder which uses embedding (on 2-mer "word" tokens) and an RNN composed of gated recurrent units (GRU)\cite{chung2014empirical}. The size of the embedding vectors, which is the same as the size of the GRU units, was 256. The RNN had two layers, and used attention\cite{chorowski2014end}. The encoder state was mapped into a vector of length $n_z$ representing the mean of a normal distribution and a vector of length $n_z$ representing the standard deviation of a normal distribution. This distribution was sampled and decoded using a second (decoder) GRU-based RNN. The type of generative latent distribution model in the middle of our sequence to sequence model is known as a variational autoencoder (VAE) and has been used as a component in other recent molecular representation papers\cite{gomez2016automatic}. See Figure \ref{model_diagram} for a diagram of the model.
+The sequence-to-sequence model starts with a sequence encoder which uses embedding (on 2-mer "word" tokens) and an RNN composed of gated recurrent units (GRU)\cite{chung2014empirical}. The size of the embedding vectors, which is the same as the size of the GRU units, was 48. The RNN had two layers, and used attention\cite{chorowski2014end}. The encoder state was mapped into a vector of length 28 representing the mean of a normal distribution and a vector of length 28 representing the standard deviation of a normal distribution. This distribution was sampled and decoded using a second (decoder) GRU-based RNN. The type of generative latent distribution model in the middle of our sequence to sequence model is known as a variational autoencoder (VAE) and has been used as a component in other recent molecular representation papers\cite{gomez2016automatic}. See Figure \ref{model_diagram} for a diagram of the model.
 
-\begin{figure}
+\begin{figure}[h]
   \centering
-  \includegraphics[width=0.5\textwidth]{figures/model_diagram.pdf}
+  \includegraphics[width=0.8\textwidth]{figures/model_diagram.pdf}
   \caption{Diagram of sequence to sequence peptide model.}
   \label{model_diagram}
 \end{figure}
@@ -173,17 +173,69 @@ The objective function used to train our model is a sum of the reconstruction lo
 
 \section{Results}
 
-- Testing loss and latent loss over time
+We trained our model on the training set and recorded the loss function averaged over each sequence-bucket. We recorded the the overall loss which is defined as the sum of the reconstruction loss and the latent loss, and also the latent loss component alone. As you can see the loss decreased over the course of the optimization (Figure \ref{loss}), however the latent loss represented only a small fraction of the overall loss. This may imply that the model is under-fitting the data. Additional fine tuning of the model's hyper parameters could perhaps improve the model's performance.
 
-- Example translations
+%% Testing loss and latent loss over time
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/loss.png}
+  \caption{Testing loss, which is defined as (latent loss + reconstruction loss) and latent loss alone, as a function of gradient decent batches.}
+  \label{loss}
+\end{figure}
 
-- Latent space by sequence length
+As an autoencoder, our model maps input peptides onto outputs scholastically such that the output approximates the input. Because a VAE is stochastic, the output is non deterministic. In Table \ref{translations} we show example input peptides from our testing set and corresponding outputs fed through the trained model. As you can see, the outputs approximate the inputs without over-fitting. This non-deterministic property can be used to perform semi-supervised learning, a proposal which is expanded on in the discussion section of this paper.
 
-- Latent space by hydrophobicity
+%% translations table
+\begin{table}
+\caption{ Three peptides from the testing set were fed through the model and the output was recorded three times for each input peptide. Note that the output is stochastic, showing insertions, deletions and substitutions, demonstrating the stochastic behavior of VAEs.}
+  \begin{tabular}{ | c | l | }
+    \hline
+    input 1 & MAEYGEKYAEPLISEYALRRAF\_EG \\ \hline
+    output 1a & MLGEEQKYAEPLISVKLDPAAFTSEG \\ \hline
+    output 1b & MLGEAEILILPLISVKLDPATSEG \\ \hline
+    output 1c & MLLDGEKYAEPLISRELDPAAFTSEG \\ \hline
 
-- Latent space by transmembrane or not
+    input 2 & MDQVSRDLAFRVRVRATQVRYEKEMKIKFRKQ \\ \hline
+    output 2a & MLQVSRGQLLRVRVRAVRVREEKEIKKQ \\ \hline
+    output 2b & MLQVSRGQLLRVRVRAVRVRKEKEIK \\ \hline
+    output 2c & MLLLLLLLRVRVRVRVVRVREEKEIK \\ \hline
+    
+    input 3 & MMLNELIATAIGEVGIAWFDFYSIGTSALGLDYFYSIFLLFF \\ \hline
+    output 3a & MSKDIAIATAIGEVGIFDFDFDSIGTSASALDATIFIFLLLL \\ \hline
+    output 3b & MKKDIATAANGIGIGIFDFDFDSIGTSAGVLDATIFIFLLLL \\ \hline
+    output 3c & MSLNLNLLTAEVGIFDFDFDFDSIGTSALGLDATIFIFLL \\ \hline
+    \hline
+  \end{tabular}
+  \label{translations}
+\end{table}
 
-\section{Conclusions and Future Directions}
+The most straightforward way that this unsupervised model can be used, is as a dense low dimensional representation of peptide sequences. This is significant, since variable length peptides are all now represented as fixed length numerical vectors, allowing the peptides to be fed into further analyses that require a numerical representation. We visualized the distribution of the numerical representations of the peptides in our test set by mapping the 28 dimensional representation vectors into 2 dimensions using tSNE, and plotting the resulting 2 dimensional representation of the peptides. We colored the 2 dimensional peptide representations by sequence length (Figure \ref{lengths}), and average amino acid hydrophobicity (Figure \ref{hydrophobicity}). As you can see there is a clear clustering of peptides by sequence length, and also a weaker clustering of peptides by average hydrophobicity. These results give some evidence that our model, which intrinsically is optimized to capture sequence similarity, is also capturing biological properties. These similarities encoded in this unsupervised representation can be exploited in a larger semi-supervised machine learning application.
+
+%% Latent space by sequence length
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/lengths.png}
+  \caption{Visualization of latent space for the test set colored by sequence length.}
+  \label{lengths}
+\end{figure}
+
+%% Latent space by hydrophobicity
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/hydrophobicity.png}
+  \caption{Visualization of latent space for the test set colored by average amino acid Kd (hydrophobicity).}
+  \label{hydrophobicity}
+\end{figure}
+
+%% Latent space by cluster
+%\begin{figure}
+%  \centering
+%  \includegraphics[width=0.8\textwidth]{figures/membrane.png}
+%  \caption{Visualization of latent space for the test set colored by XXXXXXX.}
+%  \label{cluster}
+%\end{figure}
+
+\section{Discussion}
 
 In summary we have constructed and trained a stochastic representation of peptides using an unsupervised sequence to sequence VAE. By using this representation we show that peptides with similar biological function cluster close together in latent space, though the model was trained on biological sequences alone. Thus we can represent the biological properties of the millions of peptides and proteins stored in public database repositories in a cheap unsupervised manner without having to quantify or "label" their precise biological attributes through external experimentation. This allows future researchers to take our representation and in conjunction with labeled data, to perform semi-supervised learning for peptide drug discovery or for simulating some optimization search under a given objective function.
 
