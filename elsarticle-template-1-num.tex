@@ -25,8 +25,8 @@
 
 %% Use the options 1p,twocolumn; 3p; 3p,twocolumn; 5p; or 5p,twocolumn
 %% for a journal layout:
-%% \documentclass[final,1p,times]{elsarticle}
-\documentclass[final,1p,times,twocolumn]{elsarticle}
+\documentclass[final,1p,times]{elsarticle}
+%%\documentclass[final,1p,times,twocolumn]{elsarticle}
 %% \documentclass[final,3p,times]{elsarticle}
 %% \documentclass[final,3p,times,twocolumn]{elsarticle}
 %% \documentclass[final,5p,times]{elsarticle}
@@ -43,6 +43,13 @@
 %% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
 %% for the whole article with \linenumbers after \end{frontmatter}.
 \usepackage{lineno}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
 
 %% natbib.sty is loaded by default. However, natbib options can be
 %% provided with \biboptions{...} command. Following options are
@@ -100,13 +107,12 @@
 %% \address[label1]{<address>}
 %% \address[label2]{<address>}
 
-\author{authors commented out for review}
-%%\author{Patrick Breen}
-%%\address{Athens Georgia, United States}
+\author{Patrick Breen}
+\address{Institute of Bioinformatics, University of Georgia}
 
 \begin{abstract}
 %% Text of abstract
-With the developments in the fields of machine learning, bioinformatics and combinatorial chemistry, scientists hope to be able to search exponentially sized combinatorial search spaces to identify drug targets and aid in synthetic evolution strategies. Because of both the exponential size of the molecular search space and the complex nature of the objective function, efficient strategies for identifying optimal drug targets is difficult. It is possible that we could use an unsupervised method to produce a lower dimensional latent representation that accounts for the distribution of naturally occurring molecules. Ideally this lower dimensional latent distribution also captures "functional similarity" and can be used to iteratively improve a molecular solution under some objective function. In this work we present such a latent representation for peptides and discuss how our model could be used for peptide design.
+With the developments in the fields of machine learning, bioinformatics and combinatorial chemistry, scientists hope to be able to search exponentially sized combinatorial search spaces to identify drug targets and aid in synthetic evolution strategies. Because of the exponential size of the molecular search space, the complex nature of the objective function, and the non-numeric representation of peptides, efficient strategies for identifying optimal drug targets is difficult. Recent work has shown the feasibility of using an unsupervised machine learning method to produce a dense low dimensional latent representation that accounts for the distribution of naturally occurring peptides. Ideally this low dimensional latent distribution also captures functional similarity and can be used to iteratively optimize a peptide solution under some objective function. In this work we present such a latent representation for peptides and discuss how our model could be used for peptide design.
 \end{abstract}
 
 \begin{keyword}
@@ -128,21 +134,26 @@ Deep Learning \sep Bioinformatics \sep Generative Modeling
 %% main text
 \section{Introduction}
 
-The design space of all peptides of length N is combinatorial in N, or approximately $20^N$ (since there are 20 canonical amino acids). All recorded peptides that occur in the uniprot database is a much smaller number, though still quite large, at about 10 million peptides less than 100 residues. Combinatorial chemistry developed in the 1990s suggested that new biologics could be produced by searching the massive search space of both existing and possible peptides for a peptide with an optimal binding or therapeutic property. However, such a brute force search would be costly in time and resources so researchers started to develop heuristics and strategies to make combinatorial drug search more efficient\cite{feher2003property}. By taking existing molecules and combining them, they had some success at producing, or "designing" useful molecules in more efficient ways than brute force search of the combinatorial search space.
+%% paragraph explaining why peptide design is important
+Traditional pharmacological drug development has focused on the production of small molecules less than 500 Da due to their high oral bioavaliability, and relatively low cost to manufacture. The biggest drawback to these small molecule drugs is their relative lack of biological specificity, leading to complex and unpredictable off-target effects. Since the production of insulin in the early 20th century, biotechnology companies have been using injectable peptides to produce theraputic effects\cite{weyer1999natural}. Recently peptides have been approved, and are in wide use for rheumatoid arthritis, non-Hodgkin’s B-cell lymphoma and breast cancer\cite{craik2013future}. While many peptide theraputics, sometimes called biologics, are produced through mimicry or cloning of a deficient biological product, it is feasible that existing peptide theraputics could be optimized by searching the combinatorial search space of peptides.
 
-More recently, the widespread adoption of machine learning has allowed us to use deep learning to produce scalable and hierarchical models for data representation. Early unsupervised models such as principle components analysis (PCA) which is based simple linear regression, could now be scaled hierarchically and made non-linear with the development of autoencoders\cite{hinton1994autoencoders}. Use of these unsupervised approaches could produce an efficient "compressed" data representation that could be used to improve supervised learning. In our biologic design domain this would allow finding optimal molecular configurations in a semi-supervised manner. Unsupervised learning could also be used simply to cluster similar molecules for research purposes to categorize molecules of similar properties.
+The design space of all peptides of length N is combinatorial in N, or approximately $20^N$ (since there are 20 canonical amino acids). All recorded peptides that occur in the uniprot database is a much smaller number, though still quite large, at about 6.1 million peptides between 10 and 100 residues. Combinatorial chemistry developed in the 1990s suggested that new biologics could be produced by searching the massive search space of both existing and possible peptides for a peptide with an optimal binding or therapeutic property \cite{youngquist1995generation}. However, such a brute force search would be costly in time and resources prompting researchers to develop heuristics and alternative strategies to make combinatorial drug search more efficient\cite{feher2003property}. By taking existing molecules and combining them through genetic algorithms and through rational design, there was some success at producing useful molecules in more efficient ways than brute force search of the combinatorial search space\cite{belda2005enpda}.
 
-A special type of autoencoder, known as a variational autoencoder (VAE), extends the autoencoder model by adding a layer of probabilistic modeling\cite{kingma2013auto}. A VAE allows one to map a given data point to a distribution that if sampled will represent a probability distribution that can map back to the initial data point. This allows one to not only determine a representation, but also to sample synthetic data points (not in the training data) that are similar to a given data point. This allows a probabilistic way of exploring "synthetic" data points in the input space.
+More recently, the widespread adoption of machine learning has demonstrated that deep learning can produce efficient scalable models for data representation. Early unsupervised models such as principle components analysis (PCA) which is based simple linear regression, could now be scaled hierarchically and made non-linear with the development of autoencoders\cite{hinton1994autoencoders}. Use of these unsupervised approaches could produce an efficient "compressed" intermediate data representation that could be used in a variety of subsequent analyses. In our peptide design domain this would allow finding optimal molecular configurations in a semi-supervised manner. Unsupervised learning could also be used simply to cluster similar molecules for research purposes to categorize molecules of similar properties.
 
-In the application of molecular modeling, a recent paper "Automatic chemical design using data-driven continuous representation of molecules"\cite{gomez2016automatic} used a VAE to produce a generative model of small drug molecules. The cited paper attempts to create a generative continuous representation of small molecules for drug-design related machine learning purposes. The work in this paper will describe a similar model, namely a generative continuous representation of peptides. In addition, the sequence to sequence network that we used took advantage of some advanced features such as an "attention mechanism" and "bucketing" (see Model and Data section for more description). We demonstrate how our model can be used as a latent representation, and discuss how it could be extended for semi-supervised peptide design.
+A specific type of autoencoder, known as a variational autoencoder (VAE), extends the autoencoder model by adding a layer of probabilistic modeling\cite{kingma2013auto}. A VAE allows one to map a given data point to a distribution that if sampled will represent a probability distribution that can map back to the initial data point. In practice, these functional mappings are implemented with feedforward neural networks that can be optimized using backpropagation. Use of a VAE instead of a deterministic autoecoder allows one to not only determine a representation, but also to sample synthetic data points (not in the training data) that are similar to a given data point. This allows a probabilistic way of exploring similar synthetic data points in the input space.
+
+In the application of molecular modeling, a recent paper "Automatic chemical design using data-driven continuous representation of molecules"\cite{gomez2016automatic} used a VAE to produce a generative model of small drug molecules. The cited paper creates a generative continuous representation of small molecules for drug-design related machine learning purposes. The work in this paper will describe a similar model with a different application, namely a generative continuous representation of peptides. In addition, the sequence to sequence network that we used takes advantage of some advanced features such as an "attention mechanism" and "bucketing" (see Model and Data section for more description). We demonstrate how our model can be used as a latent representation, and discuss how it could be extended for semi-supervised peptide design.
 
 \section{Model and Data}
 
-The generative peptide representation model was implemented using the Tensorflow deep learning library\cite{tensorflow2015-whitepaper}. The model overall is a sequence to sequence autoencoder, in which a peptide, represented as a sequence, is mapped into a latent distribution which is then sampled to generate a state vector that attempts to reproduce the initial peptide. By setting each amino acid equal to a unit (word) in our input and output sequence, we could think of our model as a translation model with vocabulary size of about 20 (the number of canonical amino acids). Though this simplistic approach would have worked, we wanted to incorporate advanced translation methods including embedding via negative sampling. This required us to increase our "vocabulary size". Therefore, instead of using individual amino acids as "words" we used amino acid 2-mers, resulting in a vocabulary size of 400 canonical amino acid 2-mers. We replaced non-canonical amino acids with an "unknown" token represented as a '\_' character.
+The generative peptide representation model was implemented using the Tensorflow deep learning library\cite{tensorflow2015-whitepaper}. The model overall is a recurrent neural network (RNN) sequence to sequence autoencoder, in which a peptide, represented as a sequence of amino acids, is encoded into a latent distribution which is then sampled to generate a dense numerical state vector that is decoded reproduce the initial peptide. The RNN was composed of gated recurrent units (GRU)\cite{chung2014empirical}. By setting each amino acid equal to a unit (word) in our input and output sequence, we could think of our model as a translation model with vocabulary size of about 20 (the number of canonical amino acids). We replaced non-canonical amino acids with an "unknown" token represented as a '\_' character.
 
-Our data was acquired from uniref90, a dataset that contains proteins and peptides with length of at least 10 amino acids. From this dataset we constrained our model to peptides of less than 100 amino acids resulting in about 6.1 million unique peptides. We uniformly sampled 10000 of these peptides as a test set, and assigned the rest as our training set. Note that our dataset, while large, is many orders of magnitude less than the approximately $20^{100}$ total possible possible peptides of length 100. By constraining our model to only peptides that are found in nature we heavily bias our model to represent only a small fraction of the combinatorial search space.
+Our data was acquired from uniref90, a dataset that contains proteins and peptides with length of at least 10 amino acids. From this dataset we constrained our model to peptides of less than 100 amino acids resulting in about 6.1 million unique peptides. We uniformly sampled 1,300 of these peptides as a test set, and assigned the rest as our training set. Note that our dataset, while large, is many orders of magnitude less than the approximately $20^{100}$ total possible possible peptides of length 100. By constraining our model to only peptides that are found in nature we heavily bias our model to represent only a small fraction of the combinatorial search space. Furthermore, 
 
-Both the training and testing peptides were "bucketed" into 4 buckets based on amino acid 2-mer length. The 2-mer sizes for each bucket were 5-20, 20-30, 30-40 and 40-50. Peptides falling in separate buckets have some bucket-specific model parameters and some some shared model parameters. The bucket-specific parameters allow the model to handle shorter peptides differently from longer peptides. For example, short peptides tend not to start with a methionine, while almost all longer peptides start with a methionine. Shared parameters capture structure that is not specific to bucket length. An example of parameters that are shared are the embedding parameters, which capture the relative similarities of amino acid 2-mer. This makes rational sense, because chemically a given 2-mer should behave similarly whether it is in a long or short peptide, only the distribution of 2-mers is different larger and smaller peptides.
+Both the training and testing peptides were "bucketed" into 4 buckets based on peptide length. The number of resides per bucket were 10-40, 40-60, 60-80 and 80-100. Peptides falling in separate buckets have some bucket-specific model parameters and some some shared model parameters. The bucket-specific parameters allow the model to handle shorter peptides differently from longer peptides. For example, short peptides often do not start with a methionine, while almost all longer peptides start with a methionine. Shared parameters capture structure that is not specific to bucket length. The model also used attention and embedding mechanism, extensions to RNN's that have demonstrated success in learning complex patterns in sequences\cite{chorowski2014end}. 
+
+The model was trained as a conditional RNN\cite{cho2014learning}, in which the output of each cell in the decoder is fed as an input to the next cell in the decoder. The model was evaluated as an unconditional RNN in which the decoder received only the state from the latent distribution See Figure \ref{model_diagram} for a diagram of the model.
 
 %The sequence length distributions are given in Figure \ref{fig:distribution_data_testing} and \ref{fig:distribution_data_training}. Note the scales.
 %
@@ -160,34 +171,32 @@ Both the training and testing peptides were "bucketed" into 4 buckets based on a
 %  \label{fig:distribution_data_training}
 %\end{figure}
 
-The sequence-to-sequence model starts with a sequence encoder which uses embedding (on 2-mer "word" tokens) and an RNN composed of gated recurrent units (GRU)\cite{chung2014empirical}. The size of the embedding vectors, which is the same as the size of the GRU units, was 48. The RNN had two layers, and used attention\cite{chorowski2014end}. The encoder state was mapped into a vector of length 28 representing the mean of a normal distribution and a vector of length 28 representing the standard deviation of a normal distribution. This distribution was sampled and decoded using a second (decoder) GRU-based RNN. The type of generative latent distribution model in the middle of our sequence to sequence model is known as a variational autoencoder (VAE) and has been used as a component in other recent molecular representation papers\cite{gomez2016automatic}. See Figure \ref{model_diagram} for a diagram of the model.
-
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/model_diagram.pdf}
+  \includegraphics[width=0.8\textwidth]{figures/model_diagram.png}
   \caption{Diagram of sequence to sequence peptide model.}
   \label{model_diagram}
 \end{figure}
 
-The objective function used to train our model is a sum of the reconstruction loss, the error between the input and output sequences, and the latent loss, a regularization term describing the complexity of the latent distribution (both measured in log-perplexity). By adding the latent loss together with the reconstruction loss, we helped prevent over-fitting our model to the training data. The reconstruction loss was defined as the weighted cross entropy for a sequence, a loss function that has worked well in English to french translation, as well as general sequence to sequence applications\cite{vinyals2015grammar}. However, despite these successes, it remains to be seen if it is the most appropriate loss function for peptide sequences, which may be unique in their specific requirements, such as needing explicit handling of insertions and deletions. A loss function based on the "edit distance" between two strings may more explicitly handle these phenomena, though be more costly to compute.
+The objective function used to train our model is a sum of the reconstruction loss, the cross entropy between the input and output sequences, and the latent loss, the KL-divergence between the latent distribution and the unit Gaussian (both measured in log-perplexity). By adding the latent loss together with the reconstruction loss, the VAE is fit to the data while also optimizing the regularity of the latent distribution to prevent overfitting. The reconstruction loss was defined as the weighted cross entropy for a sequence, a loss function that has worked well in English to French translation, as well as other general sequence to sequence applications\cite{vinyals2015grammar}. However, despite these successes, it remains to be seen if cross entropy is the most appropriate loss function for peptide sequences, which may be unique in their specific requirements, such as needing explicit handling of insertions and deletions. A loss function based on the edit distance between two peptide sequences may more explicitly handle these phenomena, though it would be more costly to compute slowing overall training speed.
 
 \section{Results}
 
-We trained our model on the training set and recorded the loss function averaged over each sequence-bucket. We recorded the the overall loss which is defined as the sum of the reconstruction loss and the latent loss, and also the latent loss component alone. As you can see the loss decreased over the course of the optimization (Figure \ref{loss}), however the latent loss represented only a small fraction of the overall loss. This may imply that the model is under-fitting the data. Additional fine tuning of the model's hyper parameters could perhaps improve the model's performance.
+We trained our model on the training set and recorded the loss function averaged over each sequence-bucket. We recorded the the reconstruction loss and the latent loss over the course of training. As you can see the reconstruction loss decreased over the course of the optimization (Figure \ref{loss}), however in many batches, even after extensive training, the latent loss represented only a small fraction of the overall loss. This may imply that the model is under-fitting the data. Additional tuning of the model's hyper parameters could potentially improve the model's performance.
 
 %% Testing loss and latent loss over time
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.8\textwidth]{figures/loss.png}
-  \caption{Testing loss, which is defined as (latent loss + reconstruction loss) and latent loss alone, as a function of gradient decent batches.}
+  \caption{Reconstruction loss and latent loss, as a function of number of gradient decent batches.}
   \label{loss}
 \end{figure}
 
-As an autoencoder, our model maps input peptides onto outputs scholastically such that the output approximates the input. Because a VAE is stochastic, the output is non deterministic. In Table \ref{translations} we show example input peptides from our testing set and corresponding outputs fed through the trained model. As you can see, the outputs approximate the inputs without over-fitting. This non-deterministic property can be used to perform semi-supervised learning, a proposal which is expanded on in the discussion section of this paper.
+Because a VAE is stochastic, the output is non deterministic. In Table \ref{translations} we show example input peptides from our testing set and corresponding outputs fed through the trained model. As you can see, the outputs approximate the inputs, with varying levels of insertion, deletion and substitution relative to the input. Formally the VAE decoder defines a distribution of outputs $x$ given an input $z$, $p_{model}(x|z)$. This allows us to use our trained model to sample "similar" peptides to a given peptide. We can use this distribution to perform a biased search through peptide design space as part of a peptide design proceedure (see section: Proposed exploration of peptide design space).
 
 %% translations table
 \begin{table}
-\caption{ Three peptides from the testing set were fed through the model and the output was recorded three times for each input peptide. Note that the output is stochastic, showing insertions, deletions and substitutions, demonstrating the stochastic behavior of VAEs.}
+\caption{ Three peptides from the testing set were fed through the model and the output was sampled three times for each input peptide. Note that the output is stochastic, showing insertions, deletions and substitutions relative to the input.}
   \begin{tabular}{ | c | l | }
     \hline
     input 1 & MAEYGEKYAEPLISEYALRRAF\_EG \\ \hline
@@ -209,10 +218,12 @@ As an autoencoder, our model maps input peptides onto outputs scholastically suc
   \label{translations}
 \end{table}
 
-The most straightforward way that this unsupervised model can be used, is as a dense low dimensional representation of peptide sequences. This is significant, since variable length peptides are all now represented as fixed length numerical vectors, allowing the peptides to be fed into further analyses that require a numerical representation. We visualized the distribution of the numerical representations of the peptides in our test set by mapping the 28 dimensional representation vectors into 2 dimensions using tSNE, and plotting the resulting 2 dimensional representation of the peptides. We colored the 2 dimensional peptide representations by sequence length (Figure \ref{lengths}), and average amino acid hydrophobicity (Figure \ref{hydrophobicity}). As you can see there is a clear clustering of peptides by sequence length, and also a weaker clustering of peptides by average hydrophobicity. These results give some evidence that our model, which intrinsically is optimized to capture sequence similarity, is also capturing biological properties. These similarities encoded in this unsupervised representation can be exploited in a larger semi-supervised machine learning application.
+\subsection{Use as Representation}
+
+The most straightforward way that this unsupervised model can be used, is as a dense low dimensional representation of peptide sequences. This is significant, since variable length peptides are hard to input into traditional data analysis algorithms that expect a dense numerical vector input. After training our model, all peptides can be represented by their latent state, allowing the peptides to be fed into further data analyses. We visualized the distribution of the numerical representations of the peptides in our test set by mapping the 28 dimensional representation vectors into 2 dimensions using tSNE, and plotting the resulting 2 dimensional representation of the peptides. We colored the 2 dimensional peptide representations by sequence length (Figure \ref{lengths}), and average amino acid hydrophobicity (Figure \ref{hydrophobicity}). There is a clear clustering of peptides by sequence length, and also a weaker clustering of peptides by average hydrophobicity (hydrophobicity represented by Kd). These results give some evidence that our model, which is only optimized to capture sequence similarity, is also capturing biological functional properties. The similarities encoded in this embedded representation can be exploited in a downstream supervised machine learning application.
 
 %% Latent space by sequence length
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.8\textwidth]{figures/lengths.png}
   \caption{Visualization of latent space for the test set colored by sequence length.}
@@ -220,7 +231,7 @@ The most straightforward way that this unsupervised model can be used, is as a d
 \end{figure}
 
 %% Latent space by hydrophobicity
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.8\textwidth]{figures/hydrophobicity.png}
   \caption{Visualization of latent space for the test set colored by average amino acid Kd (hydrophobicity).}
@@ -235,11 +246,19 @@ The most straightforward way that this unsupervised model can be used, is as a d
 %  \label{cluster}
 %\end{figure}
 
+\subsection{Proposed exploration of peptide design space}
+
+Finally, we propose an optimization strategy could naturally take advantage of the distribution encoded in our model by using a biased Metropolis-Hastings-like search strategy (see Algorithm \ref{metropolis}). Recall that due to the stochastic nature of the VAE, for a given input peptide $y$, we can generate an output distribution of peptides $x$ that are related to the input peptide, $p_{model}(x|y)$. Assume we have an objective function for how well a given peptide performs at binding or for drug treatment outcome, $o(x)$. This objective function could be filled with local optima, not differentiable, and expensive to sample (requiring external experiment or molecular simulation). This rules out gradient based methods, and makes sampling $o(x)$ expensive. Given these constraints, we could construct an optimization strategy of this function potentially more effective than Monto Carlo or exhaustive search strategies (since we are using the training data to bias our search), if we use our proposed model as the "proposal distribution function" in a Metropolis-Hastings-like optimization. Such a proposed application would be similar in theory to previous work, but with a different proposal distribution function\cite{giguere2013improved}. It is important to note that this while we could describe this search strategy as Metropolis-Hastings-like it is not equivalent, and does not inherit any guarantees on performance or guarantees of finding the global optimum.
+
+Because this strategy for "synthetic peptide design" would require an experimentally relevant objective function defined on the entire space of possible molecules, this proposal, while facilitated by the distribution produced in this paper, would require substantial experimental resource expenditure to evaluate empirically.
+
+% put pseudo code in here ?
+
+
 \section{Discussion}
 
-In summary we have constructed and trained a stochastic representation of peptides using an unsupervised sequence to sequence VAE. By using this representation we show that peptides with similar biological function cluster close together in latent space, though the model was trained on biological sequences alone. Thus we can represent the biological properties of the millions of peptides and proteins stored in public database repositories in a cheap unsupervised manner without having to quantify or "label" their precise biological attributes through external experimentation. This allows future researchers to take our representation and in conjunction with labeled data, to perform semi-supervised learning for peptide drug discovery or for simulating some optimization search under a given objective function.
+In summary we have constructed and trained a representation of peptides using an unsupervised sequence to sequence VAE. By using this representation we showed that peptides with similar biological function cluster close together in latent space, though the model was trained on biological sequences alone. Thus we can represent the biological properties of the millions of peptides and proteins stored in public database repositories in a cheap unsupervised manner without having to quantify or label their precise biological attributes through external experimentation. This allows future researchers to take our dense numerical representation and in conjunction with labeled data, to perform conventional semi-supervised learning for peptide drug discovery or more generally for some optimization search under a given objective function. We have also proposed a downstream sampling method that leverages our VAE model to explore peptide design space for increasingly optimal synthetic peptides.
 
-Such an optimization strategy could naturally take advantage of the distribution encoded in our model by using a Metropolis-Hastings-like search strategy. Recall that due to the stochastic nature of the VAE, for a given input peptide, we can generate an output distribution of peptides that are related to the input peptide. Assume we have an objective function for how well a given peptide performs at binding or for drug treatment outcome. This objective function could be filled with local optima, not differentiable, and expensive to sample (requiring external experiment or molecular simulation). We could construct an an optimization strategy of this function more effective than Monto Carlo or exhaustive search strategies, if we use our proposed model as the "proposal distribution function" in a Metropolis-Hastings-like optimization. Such a proposed application would be similar in theory to previous work, but with a different proposal distribution function\cite{giguere2013improved}. Because this strategy for "synthetic peptide design" would require an experimentally relevant objective function defined on the entire space of possible molecules, this proposal, while facilitated by the distribution produced in this paper, would require substantial experimental resource expenditure.
 
 \bibliographystyle{model1-num-names}
 \bibliography{sample.bib}
